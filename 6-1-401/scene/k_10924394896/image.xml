@@ -1,0 +1,6 @@
+<krpano>
+<preview url="k_10924394896.tiles/preview.jpg" />
+<image prealign="0|0.0|0">
+		<cube url="k_10924394896.tiles/pano_%s.jpg" />
+	</image>
+</krpano>

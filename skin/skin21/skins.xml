@@ -1,0 +1,457 @@
+<krpano>
+
+  <skin_settings 
+
+	             
+
+	               loadscene_flags="MERGE"
+
+	               loadscene_blend="OPENBLEND(0.5, 0.0, 0.75, 0.05, linear)"
+
+	               loadscene_blend_prev="SLIDEBLEND(0.5, 180, 0.75, linear)"
+
+	               loadscene_blend_next="SLIDEBLEND(0.5,   0, 0.75, linear)"
+
+	               loadingtext="loading..."
+
+	               layout_width="100%"
+
+	               layout_maxwidth="814"
+
+	             
+
+	               />
+
+
+
+  <vtourskinxmlpath url="./" />
+
+
+
+                                                                              
+
+  <plugin name="WebVR" keep="true" devices="html5"
+
+	        pluginurl="%SWFPATH%/plugins/webvr.js"
+
+	        url="%SWFPATH%/plugins/webvr.js"
+
+	        multireslock.desktop="true"
+
+	        multireslock.mobile.or.tablet="false"
+
+	        mobilevr_support="true"
+
+	        mobilevr_fake_support="true"
+
+	        onavailable="removelayer(webvr_enterbutton); skin_arrange_buttons(); webvr_onavailable();"
+
+	        onentervr="skin_showloading(false); webvr_onentervr(); webvr_setup(); skin_reloadscene_webvr();"
+
+	        onexitvr="webvr_onexitvr(); webvr_setup(); skin_reloadscene_webvr();"
+
+	        />
+
+
+
+                                                          
+
+
+
+
+
+                                                                                                       
+
+  <layer name="webvr_rotate_to_landscape_request" keep="true" vr="true" devices="mobile"
+
+	       url="%SWFPATH%/skin/skin21/rotate_device.png" scale="0.5"
+
+	       align="top" edge="center" y="28%"
+
+	       autoalpha="true" alpha="0.0"
+
+	       enabled="false"
+
+	       />
+
+
+
+  <events name="webvr_events" keep="true" devices="all"
+
+	        onresize.mobile="webvr_act_as_gyro_in_portrait_mode();"
+
+	        onviewchange=""
+
+  onclick="thumb_hide();"
+
+	        />
+
+
+
+  <action name="webvr_setup">
+
+    if(webvr.isenabled,
+
+    copy(loadscene_flags_backup, skin_settings.loadscene_flags);
+
+    set(skin_settings.loadscene_flags, MERGE|KEEPVIEW|KEEPMOVING|NOPREVIEW);
+
+    webvr_act_as_gyro_in_portrait_mode(true);
+
+    if(scenes.count GT 1,
+
+    set(hotspot[webvr_prev_scene].visible, true);
+
+    set(hotspot[webvr_next_scene].visible, true);
+
+    set(events[webvr_events].onviewchange, webvr_menu_following());
+
+    );
+
+    ,
+
+    if(loadscene_flags_backup !== null, copy(skin_settings.loadscene_flags, loadscene_flags_backup));
+
+    tween(layer[webvr_rotate_to_landscape_request].alpha, 0.0, 0.0);
+
+    set(hotspot[webvr_prev_scene].visible, false);
+
+    set(hotspot[webvr_next_scene].visible, false);
+
+    set(events[webvr_events].onviewchange, null);
+
+    );
+
+  </action>
+
+
+
+  <action name="webvr_act_as_gyro_in_portrait_mode">
+
+    if(device.mobile AND webvr.isenabled,
+
+    div(aspect, stagewidth, stageheight);
+
+    if(aspect != lastaspect OR '%1' == 'true',
+
+    copy(lastaspect, aspect);
+
+    if(stagewidth GT stageheight,
+
+                                                                                            
+
+    set(display.stereo, true);
+
+    set(webvr.mobilevr_sensor_mode, 3);
+
+    webvr.update();
+
+    tween(layer[webvr_rotate_to_landscape_request].alpha, 0.0, 0.0);
+
+    ,
+
+                                                                                               
+
+    set(display.stereo, false);
+
+    set(webvr.mobilevr_sensor_mode, 1);
+
+    webvr.update();
+
+    tween(layer[webvr_rotate_to_landscape_request].alpha, 1.0);
+
+    delayedcall(3.0, tween(layer[webvr_rotate_to_landscape_request].alpha, 0.0, 1.0); );
+
+    );
+
+    );
+
+    ,
+
+    set(lastaspect, 0);
+
+    );
+
+  </action>
+
+
+
+                                      
+
+  <style name="webvr_menu_style" depth="800" scale="0.5" distorted="true" ath="0" atv="45" alpha="0.5" />
+
+  <hotspot name="webvr_prev_scene" keep="true" style="skin_base|webvr_menu_style" crop="0|64|64|64"  ox="-64" onover="tween(scale,0.6);" onout="tween(scale,0.5);" vr_timeout="750" onclick="skin_nextscene_loop(-1);" visible="false" devices="html5.and.webgl" />
+
+  <hotspot name="webvr_next_scene" keep="true" style="skin_base|webvr_menu_style" crop="64|64|64|64" ox="+64" onover="tween(scale,0.6);" onout="tween(scale,0.5);" vr_timeout="750" onclick="skin_nextscene_loop(+1);" visible="false" devices="html5.and.webgl" />
+
+
+
+                                         
+
+  <action name="webvr_menu_following" type="Javascript" devices="html5">
+
+    <![CDATA[
+
+		var hs1 = krpano.get("hotspot[webvr_prev_scene]");
+
+		var hs2 = krpano.get("hotspot[webvr_next_scene]");
+
+		if(!hs1.hovering && !hs2.hovering)
+
+		{
+
+			var f = 0.01;	// following speed factor
+
+			var h = krpano.view.hlookat;
+
+			var v = krpano.view.vlookat;
+
+			var hsh = hs1.ath;
+
+			var hsv = hs1.atv;
+
+			h   = (h  -(h|0))   + (((h|0)  +360180)%360) - 180.0;
+
+			v   = (v  -(v|0))   + (((v|0)  +360180)%360) - 180.0;
+
+			hsh = (hsh-(hsh|0)) + (((hsh|0)+360180)%360) - 180.0;
+
+			var dh = h - hsh;
+
+			dh += (dh > 180) ? -360 : (dh < -180) ? 360 : 0
+
+			hsh += dh*f;
+
+			var a = Math.abs(v - hsv) / 90.0;
+
+			a = 1.0 * Math.max(1.0 - 2.0*Math.sqrt(a), 0);
+
+			v = v + 55.0 - v*1.5;
+
+			hsv = hsv*(1.0 - f) + v*f;
+
+			hs1.ath = hs2.ath = hsh;
+
+			hs1.atv = hs2.atv = hsv;
+
+			hs1.alpha = hs2.alpha = a;
+
+		}
+
+	]]>
+
+  </action>
+
+  <style name="skin_base" url="vtourskin.png" />
+
+                     
+
+  <layer name="skin_left" type="container" align="righttop" width="100%" height="100%" x="0" y="0" zorder="1" visible="true" keep="true">
+
+    <plugin name="vr" url="%SWFPATH%/skin/skin21/VR.png" keep="true" capture="true" x="10" y="22" width="64" height="64" visible="true" enabled="true" handcursor="true" children="true" zorder="100" alpha="1" blendmode="normal" smoothing="true" scale="0.4" align="righttop" edge="righttop" ox="" oy="" rotate="0"  onclick="js(speech(''));set(skin.vrshow,hideshow);txtadd(scenepath,'%FIRSTXML%/',get(config.scene_xml));loadpano(get(scenepath), null, KEEPVIEW, BLEND(0.1));webvr.enterVR();js(qqc_hide());"  type="plugin_skin" crop=""  alturl="%SWFPATH%/skin/skin21/VR.png" list_text="VR开关"   devices="all" >
+
+   
+
+    </plugin>
+
+    
+
+    <layer name="second_list" type="container" align="righttop" width="100%" height="400" x="0" y="60" zorder="1" visible="true" keep="true">
+
+
+
+      <plugin name="tuluoyi" url="%SWFPATH%/skin/skin21/tly_close.png" keep="true" capture="true" x="10" y="38" width="64" height="64" visible="true" enabled="true" handcursor="true" children="true" zorder="1" alpha="1" blendmode="normal" smoothing="true" scale="0.4" align="righttop" edge="righttop" ox="" oy="" rotate="0" parent="" html=""  background="" border="false" borderwidth="" blur="" textblur="" glow="" glowcolor="" textshadow="" autosize="" onhover="" onover="" onout="" onclick="switch(plugin[gyro].enabled);switch(plugin[tuluoyi].url,%SWFPATH%/skin/skin21/tly_open.png,%SWFPATH%/skin/skin21/tly_close.png);" onloaded="" type="plugin_skin"  alturl="%SWFPATH%/skin/skin21/tly_close.png"  list_text="陀螺仪开关" backgroundcolor="" roundedge="5" devices="all" >
+
+      
+
+      </plugin>
+
+
+
+      <plugin name="shapan" url="%SWFPATH%/skin/skin21/sp.png" keep="true" capture="true" x="10" y="76" width="64" height="64" visible="true" enabled="true" handcursor="true" children="true" zorder="1" alpha="1" blendmode="normal" smoothing="true" scale="0.4" align="righttop" edge="righttop" ox="" oy="" rotate="0" parent="" html="" css="text-align:center; color:#FFFFFF; font-family:Arial; font-weight:bold; font-size:12px;" background="" border="false" borderwidth="" blur="" textblur="" glow="" glowcolor="" textshadow="" autosize="" onhover="" onover="" onout="" onclick="mapshow();" onloaded="" type="plugin_skin" crop="" onovercrop="" ondowncrop="" alturl="%SWFPATH%/skin/skin21/sp.png" videourl="" altvideourl="" posterurl="" pausedonstart="false" loop="1" volume="1.0" buffertime="0.1" list_text="户型" backgroundcolor="" roundedge="5" devices="all" >
+
+     
+
+      </plugin>
+
+      
+
+    </layer>
+
+  </layer>
+
+
+
+  <layer name="skin_bottom" type="container" align="leftbottom" width="100%" height="100%" x="0" y="0" zorder="1" visible="true" keep="true">
+
+    <plugin name="thumx" url="%SWFPATH%/skin/skin21/slt.png" keep="true" capture="true" x="10" y="25" width="64" height="64" visible="true" enabled="true" handcursor="true" children="true" zorder="100000" alpha="1" blendmode="normal" smoothing="true" scale="0.4" align="leftbottom" edge="leftbottom" ox="" oy="" rotate="0" parent="" html="" css="text-align:center; color:#FFFFFF; font-family:Arial; font-weight:bold; font-size:12px;" background="" border="false" borderwidth="" blur="" textblur="" glow="" glowcolor="" textshadow="" autosize="" onhover="" onover="" onout="" onclick="thumb_lock();" onloaded="" type="plugin_skin" crop="" onovercrop="" ondowncrop="" alturl="%SWFPATH%/skin/skin21/slt.png" videourl="" altvideourl="" posterurl="" pausedonstart="false" loop="1" volume="1.0" buffertime="0.1" updateeveryframe="" onvideoready="" onvideopaused="" onvideocomplete="" onunsupported=""  soundurl="" isonload="" isonclick="" ondown="" onup="" list_text="缩略图开关" backgroundcolor="" roundedge="5" devices="all" />
+
+    <plugin name="thumx_text" url="%SWFPATH%/plugins/textfield.swf" keep="true" capture="true" x="-4" y="5" width="58" height="20" visible="true" enabled="true" handcursor="true" children="true" zorder="1" alpha="1" blendmode="normal" smoothing="true" scale="1.0" align="leftbottom" edge="leftbottom" ox="" oy="" rotate="0" parent="" html="VR场景" css="text-align:center; color:#FFFFFF;font-family:宋体; font-size:10px;" background="false" border="false" borderwidth="" blur="" textblur="" glow="" glowcolor="" textshadow="1" autosize="" onhover="" onover="" onout="" onclick="thumb_lock();" onloaded="" type="plugin_text" crop="" onovercrop="" ondowncrop="" alturl="" videourl="" altvideourl="" posterurl="" pausedonstart="false" loop="1" volume="1.0" buffertime="0.1" updateeveryframe="" onvideoready="" onvideopaused="" onvideocomplete="" onunsupported="" altonloaded="" soundurl="" isonload="" isonclick="" ondown="" onup="" list_text="" backgroundcolor="" roundedge="5" devices="all" />
+
+
+
+
+
+
+    <layer name="skin_thumbs" state="closed" url.flash="%SWFPATH%/skin/skin21/scrollimg.png" url.html5="%SWFPATH%/skin/skin21/scrollimg.png" direction="h" align="leftbottom" edge="leftbottom" y="60" width="100%" height="76" zorder="1" onloaded="" onscroll="skin_updatethumbscroll();" keep="true"  devices="all"   />
+
+  </layer>
+
+	 	<layer name="skin_title" url="%SWFPATH%/plugins/textfield.swf" align="top" edge="top" x="4" y="30" zorder="4" enabled="true" background="false" border="false" css="text-align:center; color:#FFFFFF; font-family:宋体;font-size:14px;" textshadow="1" visible="true" onautosized="" keep="true"  html="" />
+
+  <plugin name="thumbborder" url="%SWFPATH%/skin/skin21/vtourskin_thumbborder2.png" keep="true" capture="true" x="14" y="25" visible="true" enabled="false" handcursor="true"  zorder="6" alpha="1" blendmode="normal" smoothing="true" scale="1" align="lefttop" edge="left"  type="plugin_skin"  devices="all" />
+
+  <events name="skin_events" keep="true"
+
+      onxmlcomplete="set(events[skin_events].onxmlcomplete,null); skin_startup();"
+
+	        />
+
+	   	<action name="skin_updatethumbscroll">
+
+		copy(padding,skin_settings.thumbs_padding);
+
+
+
+		if(skin_settings.thumbs_scrollbuttons,
+
+			if(loverflow GT 0, set(layer[skin_thumbs_scrollleft].visible,true),  set(layer[skin_thumbs_scrollleft].visible,false) );
+
+			if(roverflow GT 0, set(layer[skin_thumbs_scrollright].visible,true), set(layer[skin_thumbs_scrollright].visible,false) );
+
+		  );
+
+
+
+		if(skin_settings.thumbs_scrollindicator,
+
+			if(woverflow GT 0,
+
+				set(layer[skin_thumbs_scrollindicator].visible,true);
+
+				sub(iw,pixelwidth,woverflow);
+
+				div(pw,iw,pixelwidth);
+
+				div(px,loverflow,woverflow);
+
+				mul(pw,iw);
+
+				copy(layer[skin_thumbs_scrollindicator].width,pw);
+
+				sub(iw,pw);
+
+				sub(iw,padding);
+
+				sub(iw,padding);
+
+				mul(px,iw);
+
+				add(px,padding);
+
+				copy(layer[skin_thumbs_scrollindicator].x,px);
+
+			  ,
+
+				set(layer[skin_thumbs_scrollindicator].visible,false);
+
+			  );
+
+		  );
+
+	</action>
+
+	
+
+	<action name="skin_startup">
+
+    if(skin.zs_gro==true,set(plugin[tuluoyi].visible,true);,set(plugin[tuluoyi].visible,false););
+
+    if(skin.zs_shapan==true,set(plugin[shapan].visible,true);,set(plugin[shapan].visible,false););
+
+    if(skin.zs_vr==true,set(plugin[vr].visible,true);,set(plugin[vr].visible,false););
+
+    if(skin.renqi_show==true,set(layer[renqi].visible,true);,set(layer[renqi].visible,false););
+
+    if(skin.zs_dianzan==true,set(plugin[dianzan].visible,true);set(plugin[dianzan_text].visible,true);,set(plugin[dianzan].visible,false);set(plugin[dianzan_text].visible,false););
+
+    if(skin.zs_share==true,set(plugin[share].visible,true);set(plugin[share_text].visible,true);,set(plugin[share].visible,false);set(plugin[share_text].visible,false););
+
+    set(num,skin.scene_num);
+
+    set(w,skin.thumb_width);
+
+    set(jx,skin.interval);
+
+    add(ww,get(w),get(jx));
+
+    mul(mu,get(ww),get(num));
+
+    set(plugin[t_box].width,get(mu));
+
+    set(plugin[t_box].y,3);
+
+    set(plugin[t_box].parent,layer[skin_thumbs]);
+
+    set(hl,get(plugin[t_box].height);
+
+
+
+
+
+
+
+  </action>
+
+	
+
+
+  <action name="thumb_lock">
+
+ switch(plugin[skin_thumbs].visible);
+
+    switch(plugin[t_box].visible);
+
+    switch(layer[typeimg].y,60,142);
+
+  switch(layer[skin_title].visible);
+
+  </action>
+
+  <action name="thumb_hide">
+
+    set(plugin[skin_thumbs].visible,false);
+
+    set(plugin[t_box].visible,false);
+
+    set(layer[typeimg].y,60);
+
+    set(layer[skin_title].visible,false);
+
+  </action>
+
+  <action name="skin_nextscene_loop">
+
+    add(newsceneindex, scenes[get(config.scene_num)].index, %1);
+
+    sub(lastsceneindex, scenes.count, 1);
+
+    if(newsceneindex LT 0, copy(newsceneindex,lastsceneindex));
+
+    if(newsceneindex GT lastsceneindex, set(newsceneindex,0));
+
+    skin_loadscene(get(newsceneindex), calc(%1 LT 0 ? skin_settings.loadscene_blend_prev : skin_settings.loadscene_blend_next));
+
+  </action>
+
+  <action name="skin_loadscene">
+
+  
+
+    txtadd(sxml,'%FIRSTXML%/',get(scenes[%1].scene_xml));
+
+    loadpano(get(sxml), null, get(skin_settings.loadscene_flags), %2);
+
+  </action>
+
+</krpano>

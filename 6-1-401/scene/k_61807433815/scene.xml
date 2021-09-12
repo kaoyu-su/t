@@ -1,0 +1,10 @@
+<krpano version="1.19" onstart="">
+  <control mousetype="drag" />
+  <config scene_name="次卧2" scene_num="k_61807433815" scene_map="false" heading="0" type_id="1001" up_scene="%FIRSTXML%/scene/k_2207517222/scene.xml" down_scene="%FIRSTXML%/scene/k_61807433815/scene.xml" scene_type="sphere" hlookat="0" vlookat="0" info_type="0" scene_infopic="" scene_xml="scene/k_61807433815/scene.xml" view_img="scene/k_61807433815/kc.jpg" gisinfo="" pstime="202108221451" />
+  <include url="image.xml" />
+  <events onmousedown="" onmouseup="" onxmlcomplete="start();" onloadcomplete="" onclick="" onremovepano="" name="k_61807433815" />
+  <data name="scene_content">
+  </data>
+  <view hlookat="0" vlookat="0" fov="120" fovtype="MFOV" fovmin="75" fovmax="140" limitfov="true" fisheye="0.0" fisheyefovlink="0.0" limitview="range" hlookatmin="-180" hlookatmax="180" vlookatmin="-90" vlookatmax="90" />
+  <hotspot name="h_50797498685" url="%FIRSTXML%/src/a0.png" keep="false" capture="true" ath="-143.85381280286364" atv="27.44578304010618" zoom="false" distorted="false" visible="true" enabled="true" handcursor="true" children="true" zorder="1" alpha="1" blendmode="normal" smoothing="true" refreshrate="auto" onhover="" onclick="js(speech(走廊););action(loadblend,%FIRSTXML%/scene/k_552012652/scene.xml,ZOOMBLEND(2.0, 2.0, easeInOutSine));" details="8" flying="0" inverserotation="false" usecontentsize="false" type="hotspot" onover="" onout="" onloaded="add_tooltip();do_crop_animation(128,128, 20);" scenename="%FIRSTXML%/scene/k_552012652/scene.xml" scale="0.4" alturl="%FIRSTXML%/src/a0.png" style="" blend="放大效果" devices="all" nametext="走廊" istext="1" img_width="128" />
+</krpano>
